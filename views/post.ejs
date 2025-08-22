@@ -5,15 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Post - ULAB Social Media</title>
     <link rel="stylesheet" href="/css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
 <body>
-    <h1>Create a Post</h1>
-    <p>Welcome, <%= user.username %>! <a href="/logout">Logout</a></p>
-    <form action="/create-post" method="POST">
-        <textarea name="content" placeholder="What's on your mind?" required></textarea>
-        <button type="submit">Post</button>
-    </form>
-    <a href="/profile">Back to Profile</a>
+    <header>
+        <h1>ULAB Social Media</h1>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/profile">Profile</a>
+            <a href="/logout">Logout</a>
+        </nav>
+    </header>
+    <main>
+        <div class="welcome-message">
+            Create a New Post, <%= user.username %>!
+        </div>
+        
+        <div class="form-container" style="max-width: 600px; margin: 0 auto;">
+            <h2>Share Your Thoughts</h2>
+            <form action="/create-post" method="POST">
+                <textarea name="content" placeholder="What's on your mind? Share your thoughts with the ULAB community..." required rows="6"></textarea>
+                <button type="submit">📝 Share Post</button>
+            </form>
+        </div>
+        
+        <div style="text-align: center; margin-top: 2rem;">
+            <a href="/profile" style="color: #1e3a8a; text-decoration: none; font-weight: 600; padding: 0.5rem 1rem; border: 2px solid #1e3a8a; border-radius: 25px; transition: all 0.3s ease;">
+                ← Back to Profile
+            </a>
+        </div>
+    </main>
     <script src="/js/scripts.js"></script>
 </body>
 </html>
