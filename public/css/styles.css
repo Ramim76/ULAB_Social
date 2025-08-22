@@ -1,0 +1,157 @@
+body {
+    font-family: 'Poppins', sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    background-color: #f0f2f5;
+    color: #1c1e21;
+}
+
+header {
+    background-color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+h1 {
+    color: #1877f2;
+    margin: 0;
+}
+
+nav a {
+    color: #1c1e21;
+    text-decoration: none;
+    margin-left: 1rem;
+    font-weight: 600;
+}
+
+nav a:hover {
+    color: #1877f2;
+}
+
+main {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.welcome-message {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 2rem;
+}
+
+.auth-forms {
+    display: flex;
+    justify-content: space-between;
+    gap: 2rem;
+}
+
+.form-container {
+    background-color: #ffffff;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    flex: 1;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+input {
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    border: 1px solid #dddfe2;
+    border-radius: 4px;
+}
+
+button {
+    background-color: #1877f2;
+    color: #ffffff;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #166fe5;
+}
+
+.post {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+}
+
+.post header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    background-color: transparent;
+    box-shadow: none;
+    padding: 0;
+}
+
+.post h3 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.post time {
+    color: #65676b;
+    font-size: 0.9rem;
+}
+
+.post-content {
+    margin-bottom: 1rem;
+}
+
+.post-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.post-actions button {
+    background-color: #e4e6eb;
+    color: #050505;
+    font-size: 0.9rem;
+}
+
+.post-actions button:hover {
+    background-color: #d8dadf;
+}
+
+.likes-list, .comments-list {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #dddfe2;
+}
+
+.comment {
+    margin-bottom: 0.5rem;
+}
+
+.comment strong {
+    font-weight: 600;
+}
+
+.delete-button {
+    background-color: #fa3e3e;
+    color: #ffffff;
+}
+
+.delete-button:hover {
+    background-color: #e93535;
+}
+

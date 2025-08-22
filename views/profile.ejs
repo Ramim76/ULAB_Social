@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - ULAB Social Media</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <h1>Your Profile</h1>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/post">Create Post</a>
+            <a href="/logout">Logout</a>
+        </nav>
+    </header>
+    <main>
+        <p class="welcome-message">Welcome, <%= user.username %>!</p>
+        <section class="posts">
+            <h2>Your Posts</h2>
+            <div id="posts">
+                <% posts.forEach(post => { %>
+                    <article class="post" id="post-<%= post.id %>">
+                        <header>
+                            <h3><%= user.username %></h3>
+                            <time><%= new Date(post.created_at).toLocaleString() %></time>
+                        </header>
+                        <p class="post-content"><%= post.content %></p>
+                        <footer>
+                            <div class="post-actions">
+                                <button onclick="toggleLike(<%= post.id %>)" class="like-button">
+                                    <span class="likes-count"><%= post.likes_count %></span> Likes
+                                </button>
+                                <button onclick="toggleComments(<%= post.id %>)" class="comment-button">
+                                    <span class="comments-count"><%= post.comments_count %></span> Comments
+                                </button>
+                                <button onclick="deletePost(<%= post.id %>)" class="delete-button">Delete</button>
+                            </div>
+                            <div class="likes-list" id="likes-<%= post.id %>"></div>
+                            <div class="comments-section" id="comments-section-<%= post.id %>" style="display: none;">
+                                <div class="comments-list" id="comments-<%= post.id %>"></div>
+                                <form onsubmit="event.preventDefault(); commentPost(<%= post.id %>)">
+                                    <input type="text" id="comment-input-<%= post.id %>" placeholder="Add a comment" required>
+                                    <button type="submit">Comment</button>
+                                </form>
+                            </div>
+                        </footer>
+                    </article>
+                <% }); %>
+            </div>
+        </section>
+    </main>
+    <script src="/js/scripts.js"></script>
+</body>
+</html>
+
