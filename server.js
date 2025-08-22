@@ -21,7 +21,27 @@ app.set('views', path.join(__dirname, 'views'));
 
 // Database initialization
 db.serialize(() => {
-  // Enhanced Users table with role and department
+  // First, create departments table (needed for foreign keys)
+  db.run(`CREATE TABLE IF NOT EXISTS departments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    code TEXT UNIQUE NOT NULL,
+    description TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )`);
+
+  // Insert default departments first
+  db.run(`INSERT OR IGNORE INTO departments (name, code, description) VALUES 
+    ('Computer Science & Engineering', 'CSE', 'Department of Computer Science and Engineering'),
+    ('Business Administration', 'BBA', 'Department of Business Administration'),
+    ('Electrical & Electronic Engineering', 'EEE', 'Department of Electrical and Electronic Engineering'),
+    ('English & Humanities', 'ENH', 'Department of English and Humanities'),
+    ('Media Studies & Journalism', 'MSJ', 'Department of Media Studies and Journalism'),
+    ('Economics', 'ECO', 'Department of Economics'),
+    ('General', 'GEN', 'General/Cross-departmental')
+  `);
+
+  // Create or update users table
   db.run(`CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT, 
     username TEXT UNIQUE, 
@@ -37,16 +57,16 @@ db.serialize(() => {
     FOREIGN KEY (department_id) REFERENCES departments(id)
   )`);
 
-  // Departments table
-  db.run(`CREATE TABLE IF NOT EXISTS departments (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    code TEXT UNIQUE NOT NULL,
-    description TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  )`);
+  // Add new columns to users table if they don't exist
+  db.run(`ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'student'`, () => {});
+  db.run(`ALTER TABLE users ADD COLUMN department_id INTEGER`, () => {});
+  db.run(`ALTER TABLE users ADD COLUMN student_id TEXT`, () => {});
+  db.run(`ALTER TABLE users ADD COLUMN year_of_study INTEGER`, () => {});
+  db.run(`ALTER TABLE users ADD COLUMN bio TEXT`, () => {});
+  db.run(`ALTER TABLE users ADD COLUMN profile_picture TEXT`, () => {});
+  db.run(`ALTER TABLE users ADD COLUMN created_at DATETIME DEFAULT CURRENT_TIMESTAMP`, () => {});
 
-  // Enhanced Posts table with categories and tags
+  // Create or update posts table
   db.run(`CREATE TABLE IF NOT EXISTS posts (
     id INTEGER PRIMARY KEY AUTOINCREMENT, 
     user_id INTEGER, 
@@ -61,6 +81,14 @@ db.serialize(() => {
     FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (department_id) REFERENCES departments(id)
   )`);
+
+  // Add new columns to posts table if they don't exist
+  db.run(`ALTER TABLE posts ADD COLUMN post_type TEXT DEFAULT 'general'`, () => {});
+  db.run(`ALTER TABLE posts ADD COLUMN department_id INTEGER`, () => {});
+  db.run(`ALTER TABLE posts ADD COLUMN course_code TEXT`, () => {});
+  db.run(`ALTER TABLE posts ADD COLUMN category TEXT`, () => {});
+  db.run(`ALTER TABLE posts ADD COLUMN priority TEXT DEFAULT 'normal'`, () => {});
+  db.run(`ALTER TABLE posts ADD COLUMN is_announcement BOOLEAN DEFAULT 0`, () => {});
 
   // Post Tags table (many-to-many relationship)
   db.run(`CREATE TABLE IF NOT EXISTS post_tags (
@@ -169,16 +197,7 @@ db.serialize(() => {
     FOREIGN KEY (post_id) REFERENCES posts(id)
   )`);
 
-  // Insert default departments
-  db.run(`INSERT OR IGNORE INTO departments (name, code, description) VALUES 
-    ('Computer Science & Engineering', 'CSE', 'Department of Computer Science and Engineering'),
-    ('Business Administration', 'BBA', 'Department of Business Administration'),
-    ('Electrical & Electronic Engineering', 'EEE', 'Department of Electrical and Electronic Engineering'),
-    ('English & Humanities', 'ENH', 'Department of English and Humanities'),
-    ('Media Studies & Journalism', 'MSJ', 'Department of Media Studies and Journalism'),
-    ('Economics', 'ECO', 'Department of Economics'),
-    ('General', 'GEN', 'General/Cross-departmental')
-  `);
+
 });
 
 // Middleware to check if user is logged in
@@ -198,6 +217,8 @@ app.get('/', async (req, res) => {
   if (req.query.course) filters.course_code = req.query.course;
   
   const posts = await getPosts(filters);
+  
+  // Always get departments for both logged in and non-logged in users (needed for registration)
   const departments = await new Promise((resolve) => {
     db.all('SELECT * FROM departments ORDER BY name', (err, deps) => {
       resolve(err ? [] : deps);
@@ -209,7 +230,12 @@ app.get('/', async (req, res) => {
 
 app.get('/profile', isAuthenticated, async (req, res) => {
   const posts = await getUserPosts(req.session.userId);
-  res.render('profile', { posts, user: req.session.user });
+  const departments = await new Promise((resolve) => {
+    db.all('SELECT * FROM departments ORDER BY name', (err, deps) => {
+      resolve(err ? [] : deps);
+    });
+  });
+  res.render('profile', { posts, user: req.session.user, departments });
 });
 
 app.get('/post', isAuthenticated, async (req, res) => {
