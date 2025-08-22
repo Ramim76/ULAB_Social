@@ -17,8 +17,31 @@
         </nav>
     </header>
     <main>
-        <p class="welcome-message">Welcome, <%= user.username %>!</p>
-        <section class="posts">
+        <div class="welcome-message">
+            Welcome to your profile, <%= user.username %>!
+            <% if (user.role === 'student' && user.student_id) { %>
+                <span class="user-badge student">Student ID: <%= user.student_id %></span>
+            <% } else if (user.role === 'faculty') { %>
+                <span class="user-badge faculty">Faculty</span>
+            <% } else if (user.role === 'staff') { %>
+                <span class="user-badge staff">Staff</span>
+            <% } %>
+            <% if (user.department_name) { %>
+                <span class="dept-badge"><%= user.department_name %></span>
+            <% } %>
+        </div>
+        
+        <!-- Navigation Tabs -->
+        <div class="nav-section">
+            <a href="#posts" class="nav-tab active" onclick="showSection('posts')">📝 My Posts</a>
+            <a href="#calendar" class="nav-tab" onclick="showSection('calendar')">📅 Calendar</a>
+            <a href="#resources" class="nav-tab" onclick="showSection('resources')">📁 Resources</a>
+            <a href="#events" class="nav-tab" onclick="showSection('events')">🎉 Events</a>
+            <a href="#mentorship" class="nav-tab" onclick="showSection('mentorship')">🤝 Mentorship</a>
+        </div>
+        
+        <!-- Posts Section -->
+        <section id="posts-section" class="content-section">
             <h2>Your Posts</h2>
             <div id="posts">
                 <% posts.forEach(post => { %>
@@ -27,7 +50,42 @@
                             <h3><%= user.username %></h3>
                             <time><%= new Date(post.created_at).toLocaleString() %></time>
                         </header>
+                        
+                        <!-- Post Meta Information -->
+                        <div class="post-meta">
+                            <% if (post.department_name) { %>
+                                <span class="meta-tag department">🏛️ <%= post.department_code %></span>
+                            <% } %>
+                            <% if (post.course_code) { %>
+                                <span class="meta-tag course">📚 <%= post.course_code %></span>
+                            <% } %>
+                            <% if (post.post_type && post.post_type !== 'general') { %>
+                                <span class="meta-tag type <%= post.post_type %>">
+                                    <% if (post.post_type === 'discussion') { %>💬 Discussion
+                                    <% } else if (post.post_type === 'announcement') { %>📢 Announcement
+                                    <% } else if (post.post_type === 'resource') { %>📁 Resource
+                                    <% } else if (post.post_type === 'event') { %>📅 Event
+                                    <% } else if (post.post_type === 'mentorship') { %>🤝 Mentorship
+                                    <% } else { %><%= post.post_type %>
+                                    <% } %>
+                                </span>
+                            <% } %>
+                            <% if (post.priority === 'high') { %>
+                                <span class="meta-tag priority high">⚠️ Important</span>
+                            <% } %>
+                        </div>
+                        
                         <p class="post-content"><%= post.content %></p>
+                        
+                        <!-- Tags -->
+                        <% if (post.tags) { %>
+                            <div class="post-tags">
+                                <% post.tags.split(',').forEach(tag => { %>
+                                    <span class="tag">#<%= tag.trim() %></span>
+                                <% }); %>
+                            </div>
+                        <% } %>
+                        
                         <footer>
                             <div class="post-actions">
                                 <button onclick="toggleLike(<%= post.id %>)" class="like-button">
@@ -51,8 +109,158 @@
                 <% }); %>
             </div>
         </section>
+        
+        <!-- Academic Calendar Section -->
+        <section id="calendar-section" class="content-section" style="display: none;">
+            <h2>📅 Academic Calendar</h2>
+            <div id="calendar-events"></div>
+        </section>
+        
+        <!-- Resources Section -->
+        <section id="resources-section" class="content-section" style="display: none;">
+            <h2>📁 Academic Resources</h2>
+            <div id="resources-list"></div>
+        </section>
+        
+        <!-- Events Section -->
+        <section id="events-section" class="content-section" style="display: none;">
+            <h2>🎉 Campus Events</h2>
+            <div id="events-list"></div>
+        </section>
+        
+        <!-- Mentorship Section -->
+        <section id="mentorship-section" class="content-section" style="display: none;">
+            <h2>🤝 Mentorship</h2>
+            <div id="mentorship-requests"></div>
+        </section>
     </main>
+    
     <script src="/js/scripts.js"></script>
+    <script>
+        // Tab switching functionality
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionName + '-section').style.display = 'block';
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+            
+            // Load content based on section
+            if (sectionName === 'calendar') {
+                loadCalendarEvents();
+            } else if (sectionName === 'resources') {
+                loadResources();
+            } else if (sectionName === 'events') {
+                loadEvents();
+            } else if (sectionName === 'mentorship') {
+                loadMentorshipRequests();
+            }
+        }
+        
+        // Load academic calendar events
+        async function loadCalendarEvents() {
+            try {
+                const response = await fetch('/api/calendar');
+                const events = await response.json();
+                const container = document.getElementById('calendar-events');
+                
+                container.innerHTML = events.map(event => `
+                    <div class="calendar-event ${event.is_important ? 'important' : ''}">
+                        <div class="event-date">${new Date(event.start_date).toLocaleDateString()}</div>
+                        <div class="event-title">${event.title}</div>
+                        <div class="event-description">${event.description || ''}</div>
+                        <div class="event-meta">
+                            <span class="meta-tag">${event.event_type}</span>
+                            ${event.department_name ? `<span class="meta-tag">${event.department_name}</span>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading calendar:', error);
+            }
+        }
+        
+        // Load resources
+        async function loadResources() {
+            try {
+                const response = await fetch('/api/resources');
+                const resources = await response.json();
+                const container = document.getElementById('resources-list');
+                
+                container.innerHTML = resources.map(resource => `
+                    <div class="resource-card">
+                        <div class="resource-title">${resource.title}</div>
+                        <div class="resource-meta">
+                            <span>📁 ${resource.resource_type}</span>
+                            ${resource.course_code ? `<span>📚 ${resource.course_code}</span>` : ''}
+                            <span>👤 ${resource.uploader_name}</span>
+                        </div>
+                        <div class="resource-description">${resource.description || ''}</div>
+                        ${resource.file_url ? `<a href="${resource.file_url}" target="_blank" class="nav-tab">Download</a>` : ''}
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading resources:', error);
+            }
+        }
+        
+        // Load events
+        async function loadEvents() {
+            try {
+                const response = await fetch('/api/events');
+                const events = await response.json();
+                const container = document.getElementById('events-list');
+                
+                container.innerHTML = events.map(event => `
+                    <div class="resource-card">
+                        <div class="resource-title">${event.title}</div>
+                        <div class="resource-meta">
+                            <span>📅 ${new Date(event.event_date).toLocaleDateString()}</span>
+                            <span>📍 ${event.location || 'TBA'}</span>
+                            <span>👤 ${event.organizer_name}</span>
+                        </div>
+                        <div class="resource-description">${event.description || ''}</div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading events:', error);
+            }
+        }
+        
+        // Load mentorship requests
+        async function loadMentorshipRequests() {
+            try {
+                const response = await fetch('/api/mentorship');
+                const requests = await response.json();
+                const container = document.getElementById('mentorship-requests');
+                
+                container.innerHTML = requests.map(request => `
+                    <div class="mentorship-request ${request.status}">
+                        <div class="resource-title">
+                            ${request.mentor_name} ↔ ${request.mentee_name}
+                        </div>
+                        <div class="resource-meta">
+                            <span>📚 ${request.subject_area}</span>
+                            <span>📊 ${request.status}</span>
+                        </div>
+                        <div class="resource-description">${request.message || ''}</div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading mentorship:', error);
+            }
+        }
+    </script>
 </body>
 </html>
 

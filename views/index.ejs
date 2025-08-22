@@ -20,22 +20,90 @@
     </header>
     <main>
         <% if (user) { %>
-            <p class="welcome-message">Welcome, <%= user.username %>!</p>
+            <div class="welcome-message">
+                Welcome back, <%= user.username %>! 
+                <% if (user.role === 'student' && user.student_id) { %>
+                    <span class="user-badge student">Student ID: <%= user.student_id %></span>
+                <% } else if (user.role === 'faculty') { %>
+                    <span class="user-badge faculty">Faculty</span>
+                <% } %>
+                <% if (user.department_name) { %>
+                    <span class="dept-badge"><%= user.department_name %></span>
+                <% } %>
+            </div>
+            
+            <!-- Filters Section -->
+            <div class="filters-section">
+                <h3>🔍 Filter Posts</h3>
+                <form method="GET" class="filters-form">
+                    <select name="department" onchange="this.form.submit()">
+                        <option value="">All Departments</option>
+                        <% departments.forEach(dept => { %>
+                            <option value="<%= dept.id %>" <%= filters.department == dept.id ? 'selected' : '' %>>
+                                <%= dept.name %> (<%= dept.code %>)
+                            </option>
+                        <% }); %>
+                    </select>
+                    
+                    <select name="type" onchange="this.form.submit()">
+                        <option value="">All Types</option>
+                        <option value="discussion" <%= filters.type === 'discussion' ? 'selected' : '' %>>Course Discussion</option>
+                        <option value="announcement" <%= filters.type === 'announcement' ? 'selected' : '' %>>Announcements</option>
+                        <option value="resource" <%= filters.type === 'resource' ? 'selected' : '' %>>Resources</option>
+                        <option value="event" <%= filters.type === 'event' ? 'selected' : '' %>>Events</option>
+                        <option value="mentorship" <%= filters.type === 'mentorship' ? 'selected' : '' %>>Mentorship</option>
+                        <option value="general" <%= filters.type === 'general' ? 'selected' : '' %>>General</option>
+                    </select>
+                    
+                    <input type="text" name="course" placeholder="Course Code (e.g., CSE101)" 
+                           value="<%= filters.course || '' %>" onchange="this.form.submit()">
+                    
+                    <% if (filters.department || filters.type || filters.course) { %>
+                        <a href="/" class="clear-filters">Clear Filters</a>
+                    <% } %>
+                </form>
+            </div>
         <% } else { %>
             <section class="auth-forms">
                 <div class="form-container">
                     <h2>Register</h2>
                     <form action="/register" method="POST">
                         <input type="text" name="username" placeholder="Username" required>
-                        <input type="email" name="email" placeholder="Email" required>
+                        <input type="email" name="email" placeholder="ULAB Email" required>
                         <input type="password" name="password" placeholder="Password" required>
+                        
+                        <select name="role" required>
+                            <option value="">Select Role</option>
+                            <option value="student">Student</option>
+                            <option value="faculty">Faculty</option>
+                            <option value="staff">Staff</option>
+                        </select>
+                        
+                        <select name="department_id" required>
+                            <option value="">Select Department</option>
+                            <% departments.forEach(dept => { %>
+                                <option value="<%= dept.id %>"><%= dept.name %></option>
+                            <% }); %>
+                        </select>
+                        
+                        <input type="text" name="student_id" placeholder="Student ID (if student)">
+                        
+                        <select name="year_of_study">
+                            <option value="">Year of Study (if student)</option>
+                            <option value="1">1st Year</option>
+                            <option value="2">2nd Year</option>
+                            <option value="3">3rd Year</option>
+                            <option value="4">4th Year</option>
+                            <option value="5">5th Year</option>
+                        </select>
+                        
                         <button type="submit">Register</button>
                     </form>
                 </div>
                 <div class="form-container">
                     <h2>Login</h2>
                     <form action="/login" method="POST">
-                        <input type="email" name="email" placeholder="Email" required>
+                        <input type="email" name="email" placeholder="ULAB Email" required>
                         <input type="password" name="password" placeholder="Password" required>
                         <button type="submit">Login</button>
                     </form>
@@ -49,10 +117,54 @@
                 <% posts.forEach(post => { %>
                     <article class="post" id="post-<%= post.id %>">
                         <header>
-                            <h3><%= post.username %></h3>
+                            <div class="post-author">
+                                <h3><%= post.username %></h3>
+                                <% if (post.role === 'faculty') { %>
+                                    <span class="role-badge faculty">Faculty</span>
+                                <% } else if (post.role === 'staff') { %>
+                                    <span class="role-badge staff">Staff</span>
+                                <% } else if (post.student_id) { %>
+                                    <span class="role-badge student">ID: <%= post.student_id %></span>
+                                <% } %>
+                            </div>
                             <time><%= new Date(post.created_at).toLocaleString() %></time>
                         </header>
+                        
+                        <!-- Post Meta Information -->
+                        <div class="post-meta">
+                            <% if (post.department_name) { %>
+                                <span class="meta-tag department">🏛️ <%= post.department_code %></span>
+                            <% } %>
+                            <% if (post.course_code) { %>
+                                <span class="meta-tag course">📚 <%= post.course_code %></span>
+                            <% } %>
+                            <% if (post.post_type && post.post_type !== 'general') { %>
+                                <span class="meta-tag type <%= post.post_type %>">
+                                    <% if (post.post_type === 'discussion') { %>💬 Discussion
+                                    <% } else if (post.post_type === 'announcement') { %>📢 Announcement
+                                    <% } else if (post.post_type === 'resource') { %>📁 Resource
+                                    <% } else if (post.post_type === 'event') { %>📅 Event
+                                    <% } else if (post.post_type === 'mentorship') { %>🤝 Mentorship
+                                    <% } else { %><%= post.post_type %>
+                                    <% } %>
+                                </span>
+                            <% } %>
+                            <% if (post.priority === 'high') { %>
+                                <span class="meta-tag priority high">⚠️ Important</span>
+                            <% } %>
+                        </div>
+                        
                         <p class="post-content"><%= post.content %></p>
+                        
+                        <!-- Tags -->
+                        <% if (post.tags) { %>
+                            <div class="post-tags">
+                                <% post.tags.split(',').forEach(tag => { %>
+                                    <span class="tag">#<%= tag.trim() %></span>
+                                <% }); %>
+                            </div>
+                        <% } %>
+                        
                         <footer>
                             <div class="post-actions">
                                 <button onclick="toggleLike(<%= post.id %>)" class="like-button">

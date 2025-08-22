@@ -428,6 +428,308 @@ a:hover {
     background-clip: text;
 }
 
+/* Academic Features Styling */
+.user-badge, .role-badge, .dept-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-left: 0.5rem;
+}
+
+.user-badge.student, .role-badge.student {
+    background-color: #87ceeb;
+    color: #1e3a8a;
+}
+
+.user-badge.faculty, .role-badge.faculty {
+    background-color: #fbbf24;
+    color: #1e3a8a;
+}
+
+.user-badge.staff, .role-badge.staff {
+    background-color: #1e3a8a;
+    color: #ffffff;
+}
+
+.dept-badge {
+    background-color: rgba(251, 191, 36, 0.2);
+    color: #1e3a8a;
+}
+
+/* Filters Section */
+.filters-section {
+    background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+    padding: 1.5rem;
+    border-radius: 15px;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(251, 191, 36, 0.2);
+}
+
+.filters-section h3 {
+    color: #1e3a8a;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+.filters-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    align-items: end;
+}
+
+.filters-form select, .filters-form input {
+    margin-bottom: 0;
+}
+
+.clear-filters {
+    color: #ef4444;
+    text-decoration: none;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border: 2px solid #ef4444;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.clear-filters:hover {
+    background-color: #ef4444;
+    color: #ffffff;
+}
+
+/* Post Meta Information */
+.post-author {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.post-meta {
+    margin-bottom: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.meta-tag {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.meta-tag.department {
+    background-color: rgba(30, 58, 138, 0.1);
+    color: #1e3a8a;
+    border: 1px solid rgba(30, 58, 138, 0.3);
+}
+
+.meta-tag.course {
+    background-color: rgba(251, 191, 36, 0.1);
+    color: #1e3a8a;
+    border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.meta-tag.type.discussion {
+    background-color: rgba(135, 206, 235, 0.1);
+    color: #1e3a8a;
+    border: 1px solid rgba(135, 206, 235, 0.3);
+}
+
+.meta-tag.type.announcement {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.meta-tag.type.resource {
+    background-color: rgba(34, 197, 94, 0.1);
+    color: #16a34a;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.meta-tag.type.event {
+    background-color: rgba(168, 85, 247, 0.1);
+    color: #7c3aed;
+    border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.meta-tag.type.mentorship {
+    background-color: rgba(251, 146, 60, 0.1);
+    color: #ea580c;
+    border: 1px solid rgba(251, 146, 60, 0.3);
+}
+
+.meta-tag.priority.high {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* Post Tags */
+.post-tags {
+    margin-bottom: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.tag {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    background-color: rgba(251, 191, 36, 0.1);
+    color: #1e3a8a;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+/* Form Styling for Academic Features */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.form-row select, .form-row input {
+    margin-bottom: 0;
+}
+
+/* Enhanced Select Styling */
+select {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-family: 'Poppins', sans-serif;
+    transition: all 0.3s ease;
+    background-color: #ffffff;
+    cursor: pointer;
+}
+
+select:focus {
+    outline: none;
+    border-color: #fbbf24;
+    box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.1);
+    transform: translateY(-2px);
+}
+
+/* Academic Calendar Styling */
+.calendar-event {
+    background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+    border-left: 4px solid #1e3a8a;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.calendar-event.important {
+    border-left-color: #ef4444;
+    background: linear-gradient(145deg, #fef2f2 0%, #ffffff 100%);
+}
+
+.event-date {
+    color: #1e3a8a;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.event-title {
+    color: #1e3a8a;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0.5rem 0;
+}
+
+/* Resource Card Styling */
+.resource-card {
+    background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+    border: 1px solid rgba(251, 191, 36, 0.2);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.resource-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(30, 58, 138, 0.1);
+}
+
+.resource-title {
+    color: #1e3a8a;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.resource-meta {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    color: #6b7280;
+}
+
+/* Mentorship Request Styling */
+.mentorship-request {
+    background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+    border: 1px solid rgba(251, 191, 36, 0.2);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.mentorship-request.pending {
+    border-left: 4px solid #fbbf24;
+}
+
+.mentorship-request.accepted {
+    border-left: 4px solid #22c55e;
+}
+
+.mentorship-request.rejected {
+    border-left: 4px solid #ef4444;
+}
+
+/* Navigation Enhancements */
+.nav-section {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.nav-tab {
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    color: #1e3a8a;
+    text-decoration: none;
+    border-radius: 25px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.nav-tab:hover, .nav-tab.active {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(251, 191, 36, 0.3);
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
     .auth-forms {
@@ -472,6 +774,33 @@ a:hover {
     
     main {
         padding: 0 0.5rem;
+    }
+    
+    .filters-form {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .post-meta {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    
+    .user-badge, .role-badge, .dept-badge {
+        margin: 0.25rem 0;
+        margin-left: 0;
+    }
+    
+    .nav-section {
+        justify-content: center;
+    }
+    
+    .resource-meta {
+        flex-direction: column;
+        gap: 0.5rem;
     }
 }
 

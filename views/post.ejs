@@ -21,10 +21,56 @@
             Create a New Post, <%= user.username %>!
         </div>
         
-        <div class="form-container" style="max-width: 600px; margin: 0 auto;">
+        <div class="form-container" style="max-width: 700px; margin: 0 auto;">
             <h2>Share Your Thoughts</h2>
             <form action="/create-post" method="POST">
                 <textarea name="content" placeholder="What's on your mind? Share your thoughts with the ULAB community..." required rows="6"></textarea>
+                
+                <div class="form-row">
+                    <select name="post_type">
+                        <option value="general">General Post</option>
+                        <option value="discussion">Course Discussion</option>
+                        <option value="announcement">Announcement</option>
+                        <option value="resource">Resource Sharing</option>
+                        <option value="event">Event</option>
+                        <option value="mentorship">Mentorship</option>
+                    </select>
+                    
+                    <select name="department_id">
+                        <option value="">Select Department (Optional)</option>
+                        <% departments.forEach(dept => { %>
+                            <option value="<%= dept.id %>" <%= user.department_id == dept.id ? 'selected' : '' %>>
+                                <%= dept.name %>
+                            </option>
+                        <% }); %>
+                    </select>
+                </div>
+                
+                <div class="form-row">
+                    <input type="text" name="course_code" placeholder="Course Code (e.g., CSE101, MAT120)">
+                    
+                    <select name="priority">
+                        <option value="normal">Normal Priority</option>
+                        <option value="high">High Priority</option>
+                    </select>
+                </div>
+                
+                <div class="form-row">
+                    <select name="category">
+                        <option value="">Select Category (Optional)</option>
+                        <option value="assignment">Assignment Help</option>
+                        <option value="exam">Exam Related</option>
+                        <option value="project">Project</option>
+                        <option value="study-group">Study Group</option>
+                        <option value="job">Job/Internship</option>
+                        <option value="research">Research</option>
+                        <option value="club">Club Activity</option>
+                        <option value="other">Other</option>
+                    </select>
+                    
+                    <input type="text" name="tags" placeholder="Tags (comma separated, e.g., midterm, programming, help)">
+                </div>
+                
                 <button type="submit">📝 Share Post</button>
             </form>
         </div>
