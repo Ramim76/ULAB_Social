@@ -34,9 +34,13 @@
         <!-- Navigation Tabs -->
         <div class="nav-section">
             <a href="#posts" class="nav-tab active" onclick="showSection('posts')">📝 My Posts</a>
+            <a href="#profile-edit" class="nav-tab" onclick="showSection('profile-edit')">⚙️ Edit Profile</a>
             <a href="#calendar" class="nav-tab" onclick="showSection('calendar')">📅 Calendar</a>
             <a href="#resources" class="nav-tab" onclick="showSection('resources')">📁 Resources</a>
             <a href="#events" class="nav-tab" onclick="showSection('events')">🎉 Events</a>
+            <% if (user.role === 'faculty' || user.role === 'staff') { %>
+                <a href="#announcements" class="nav-tab" onclick="showSection('announcements')">📢 Announcements</a>
+            <% } %>
             <a href="#mentorship" class="nav-tab" onclick="showSection('mentorship')">🤝 Mentorship</a>
         </div>
         
@@ -110,15 +114,132 @@
             </div>
         </section>
         
+        <!-- Profile Edit Section -->
+        <section id="profile-edit-section" class="content-section" style="display: none;">
+            <h2>⚙️ Edit Profile</h2>
+            <div class="form-container">
+                <form id="profile-form">
+                    <div class="form-row">
+                        <input type="text" name="username" placeholder="Username" value="<%= user.username %>" required>
+                        <select name="department_id">
+                            <option value="">Select Department</option>
+                            <% departments.forEach(dept => { %>
+                                <option value="<%= dept.id %>" <%= user.department_id == dept.id ? 'selected' : '' %>>
+                                    <%= dept.name %>
+                                </option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <% if (user.role === 'student') { %>
+                        <div class="form-row">
+                            <input type="text" name="student_id" placeholder="Student ID" value="<%= user.student_id || '' %>">
+                            <select name="year_of_study">
+                                <option value="">Year of Study</option>
+                                <option value="1" <%= user.year_of_study == 1 ? 'selected' : '' %>>1st Year</option>
+                                <option value="2" <%= user.year_of_study == 2 ? 'selected' : '' %>>2nd Year</option>
+                                <option value="3" <%= user.year_of_study == 3 ? 'selected' : '' %>>3rd Year</option>
+                                <option value="4" <%= user.year_of_study == 4 ? 'selected' : '' %>>4th Year</option>
+                                <option value="5" <%= user.year_of_study == 5 ? 'selected' : '' %>>5th Year</option>
+                            </select>
+                        </div>
+                    <% } %>
+                    <textarea name="bio" placeholder="Tell us about yourself..." rows="4"><%= user.bio || '' %></textarea>
+                    <button type="submit">💾 Update Profile</button>
+                </form>
+            </div>
+        </section>
+        
         <!-- Academic Calendar Section -->
         <section id="calendar-section" class="content-section" style="display: none;">
             <h2>📅 Academic Calendar</h2>
+            
+            <% if (user.role === 'faculty' || user.role === 'staff') { %>
+                <!-- Add Calendar Event Form -->
+                <div class="form-container" style="margin-bottom: 2rem;">
+                    <h3>📅 Add Calendar Event</h3>
+                    <form id="calendar-form">
+                        <div class="form-row">
+                            <input type="text" name="title" placeholder="Event Title" required>
+                            <select name="event_type" required>
+                                <option value="">Event Type</option>
+                                <option value="semester">Semester</option>
+                                <option value="examination">Examination</option>
+                                <option value="registration">Registration</option>
+                                <option value="break">Break/Holiday</option>
+                                <option value="ceremony">Ceremony</option>
+                                <option value="deadline">Deadline</option>
+                            </select>
+                        </div>
+                        <textarea name="description" placeholder="Event Description" rows="3"></textarea>
+                        <div class="form-row">
+                            <input type="date" name="start_date" required>
+                            <input type="date" name="end_date">
+                        </div>
+                        <div class="form-row">
+                            <select name="department_id">
+                                <option value="">All Departments</option>
+                                <% departments.forEach(dept => { %>
+                                    <option value="<%= dept.id %>"><%= dept.name %></option>
+                                <% }); %>
+                            </select>
+                            <label style="display: flex; align-items: center; color: #1e3a8a; font-weight: 500;">
+                                <input type="checkbox" name="is_important" style="margin-right: 0.5rem;">
+                                Mark as Important
+                            </label>
+                        </div>
+                        <button type="submit">📅 Add to Calendar</button>
+                    </form>
+                </div>
+            <% } %>
+            
             <div id="calendar-events"></div>
         </section>
         
         <!-- Resources Section -->
         <section id="resources-section" class="content-section" style="display: none;">
             <h2>📁 Academic Resources</h2>
+            
+            <!-- Share Resource Form -->
+            <div class="form-container" style="margin-bottom: 2rem;">
+                <h3>📤 Share a Resource</h3>
+                <form id="resource-form" enctype="multipart/form-data">
+                    <div class="form-row">
+                        <input type="text" name="title" placeholder="Resource Title" required>
+                        <select name="resource_type" required>
+                            <option value="">Select Type</option>
+                            <option value="notes">Notes</option>
+                            <option value="slides">Slides</option>
+                            <option value="video">Video</option>
+                            <option value="assignment">Assignment</option>
+                            <option value="reference">Reference</option>
+                            <option value="manual">Manual</option>
+                            <option value="guide">Guide</option>
+                        </select>
+                    </div>
+                    <textarea name="description" placeholder="Resource Description" rows="3"></textarea>
+                    <div class="form-row">
+                        <input type="text" name="course_code" placeholder="Course Code (optional)">
+                        <select name="department_id">
+                            <option value="">Select Department</option>
+                            <% departments.forEach(dept => { %>
+                                <option value="<%= dept.id %>" <%= user.department_id == dept.id ? 'selected' : '' %>>
+                                    <%= dept.name %>
+                                </option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <div class="file-upload-container">
+                        <label for="resource_file" class="file-upload-label">
+                            📎 Choose File or drag and drop
+                        </label>
+                        <input type="file" id="resource_file" name="resource_file" accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.zip,.rar,.jpg,.png">
+                        <div class="file-info" id="file-info"></div>
+                    </div>
+                    <input type="url" name="file_url" placeholder="Or paste a URL to external resource">
+                    <button type="submit">🚀 Share Resource</button>
+                </form>
+            </div>
+            
             <div id="resources-list"></div>
         </section>
         
@@ -127,6 +248,47 @@
             <h2>🎉 Campus Events</h2>
             <div id="events-list"></div>
         </section>
+        
+        <% if (user.role === 'faculty' || user.role === 'staff') { %>
+        <!-- Announcements Section -->
+        <section id="announcements-section" class="content-section" style="display: none;">
+            <h2>📢 Create Announcement</h2>
+            
+            <!-- Create Announcement Form -->
+            <div class="form-container" style="margin-bottom: 2rem;">
+                <h3>📢 New Announcement</h3>
+                <form id="announcement-form">
+                    <input type="text" name="title" placeholder="Announcement Title" required>
+                    <textarea name="content" placeholder="Announcement content..." rows="5" required></textarea>
+                    <div class="form-row">
+                        <select name="department_id">
+                            <option value="">All Departments</option>
+                            <% departments.forEach(dept => { %>
+                                <option value="<%= dept.id %>" <%= user.department_id == dept.id ? 'selected' : '' %>>
+                                    <%= dept.name %>
+                                </option>
+                            <% }); %>
+                        </select>
+                        <select name="priority">
+                            <option value="high">High Priority</option>
+                            <option value="normal">Normal Priority</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Optional Event Details -->
+                    <div style="border-top: 2px solid rgba(251, 191, 36, 0.3); margin-top: 1rem; padding-top: 1rem;">
+                        <h4 style="color: #1e3a8a; margin-bottom: 1rem;">📅 Event Details (Optional)</h4>
+                        <div class="form-row">
+                            <input type="datetime-local" name="event_date" placeholder="Event Date & Time">
+                            <input type="text" name="location" placeholder="Event Location">
+                        </div>
+                    </div>
+                    
+                    <button type="submit">📢 Post Announcement</button>
+                </form>
+            </div>
+        </section>
+        <% } %>
         
         <!-- Mentorship Section -->
         <section id="mentorship-section" class="content-section" style="display: none;">
@@ -204,9 +366,16 @@
                             <span>📁 ${resource.resource_type}</span>
                             ${resource.course_code ? `<span>📚 ${resource.course_code}</span>` : ''}
                             <span>👤 ${resource.uploader_name}</span>
+                            ${resource.department_name ? `<span>🏛️ ${resource.department_name}</span>` : ''}
                         </div>
                         <div class="resource-description">${resource.description || ''}</div>
-                        ${resource.file_url ? `<a href="${resource.file_url}" target="_blank" class="nav-tab">Download</a>` : ''}
+                        ${resource.file_url ? `
+                            <div style="margin-top: 1rem;">
+                                <a href="${resource.file_url}" target="_blank" class="nav-tab" style="display: inline-block; margin: 0;">
+                                    ${resource.file_url.startsWith('/uploads/') ? '📥 Download File' : '🔗 Open Link'}
+                                </a>
+                            </div>
+                        ` : ''}
                     </div>
                 `).join('');
             } catch (error) {
@@ -259,6 +428,173 @@
             } catch (error) {
                 console.error('Error loading mentorship:', error);
             }
+        }
+        
+        // File upload functionality
+        document.getElementById('resource_file').addEventListener('change', function(e) {
+            const fileInfo = document.getElementById('file-info');
+            const file = e.target.files[0];
+            
+            if (file) {
+                const fileSize = (file.size / 1024 / 1024).toFixed(2);
+                fileInfo.innerHTML = `
+                    <strong>Selected:</strong> ${file.name}<br>
+                    <strong>Size:</strong> ${fileSize} MB<br>
+                    <strong>Type:</strong> ${file.type}
+                `;
+                fileInfo.classList.add('show');
+            } else {
+                fileInfo.classList.remove('show');
+            }
+        });
+        
+        // Resource form submission
+        document.getElementById('resource-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const submitButton = this.querySelector('button[type="submit"]');
+            const originalText = submitButton.textContent;
+            
+            submitButton.textContent = '⏳ Uploading...';
+            submitButton.disabled = true;
+            
+            try {
+                const response = await fetch('/share-resource', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('✅ Resource shared successfully!');
+                    this.reset();
+                    document.getElementById('file-info').classList.remove('show');
+                    loadResources(); // Refresh the resources list
+                } else {
+                    alert('❌ Error: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Error sharing resource:', error);
+                alert('❌ Error sharing resource. Please try again.');
+            } finally {
+                submitButton.textContent = originalText;
+                submitButton.disabled = false;
+            }
+        });
+        
+        // Profile form submission
+        document.getElementById('profile-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const submitButton = this.querySelector('button[type="submit"]');
+            const originalText = submitButton.textContent;
+            
+            submitButton.textContent = '⏳ Updating...';
+            submitButton.disabled = true;
+            
+            try {
+                const response = await fetch('/update-profile', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('✅ Profile updated successfully!');
+                    location.reload(); // Refresh to show updated info
+                } else {
+                    alert('❌ Error: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Error updating profile:', error);
+                alert('❌ Error updating profile. Please try again.');
+            } finally {
+                submitButton.textContent = originalText;
+                submitButton.disabled = false;
+            }
+        });
+        
+        // Calendar form submission
+        if (document.getElementById('calendar-form')) {
+            document.getElementById('calendar-form').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                const submitButton = this.querySelector('button[type="submit"]');
+                const originalText = submitButton.textContent;
+                
+                submitButton.textContent = '⏳ Adding...';
+                submitButton.disabled = true;
+                
+                try {
+                    const response = await fetch('/add-calendar-event', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(Object.fromEntries(formData))
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        alert('✅ Calendar event added successfully!');
+                        this.reset();
+                        loadCalendarEvents(); // Refresh calendar
+                    } else {
+                        alert('❌ Error: ' + result.error);
+                    }
+                } catch (error) {
+                    console.error('Error adding calendar event:', error);
+                    alert('❌ Error adding calendar event. Please try again.');
+                } finally {
+                    submitButton.textContent = originalText;
+                    submitButton.disabled = false;
+                }
+            });
+        }
+        
+        // Announcement form submission
+        if (document.getElementById('announcement-form')) {
+            document.getElementById('announcement-form').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                const submitButton = this.querySelector('button[type="submit"]');
+                const originalText = submitButton.textContent;
+                
+                submitButton.textContent = '⏳ Posting...';
+                submitButton.disabled = true;
+                
+                try {
+                    const response = await fetch('/create-announcement', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(Object.fromEntries(formData))
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        alert('✅ Announcement posted successfully!');
+                        this.reset();
+                    } else {
+                        alert('❌ Error: ' + result.error);
+                    }
+                } catch (error) {
+                    console.error('Error creating announcement:', error);
+                    alert('❌ Error creating announcement. Please try again.');
+                } finally {
+                    submitButton.textContent = originalText;
+                    submitButton.disabled = false;
+                }
+            });
         }
     </script>
 </body>

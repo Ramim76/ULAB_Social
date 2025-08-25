@@ -3,6 +3,8 @@ const sqlite3 = require('sqlite3').verbose();
 const bcrypt = require('bcrypt');
 const session = require('express-session');
 const path = require('path');
+const multer = require('multer');
+const fs = require('fs');
 
 const app = express();
 const db = new sqlite3.Database('./db.sqlite');
@@ -18,6 +20,43 @@ app.use(session({
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+
+// Create uploads directory if it doesn't exist
+const uploadsDir = path.join(__dirname, 'public', 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadsDir);
+  },
+  filename: function (req, file, cb) {
+    // Create unique filename with timestamp
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ 
+  storage: storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024 // 10MB limit
+  },
+  fileFilter: function (req, file, cb) {
+    // Allow common file types
+    const allowedTypes = /jpeg|jpg|png|gif|pdf|doc|docx|ppt|pptx|txt|zip|rar/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+    
+    if (mimetype && extname) {
+      return cb(null, true);
+    } else {
+      cb(new Error('Only images, documents, and archives are allowed'));
+    }
+  }
+});
 
 // Database initialization
 db.serialize(() => {
@@ -197,8 +236,299 @@ db.serialize(() => {
     FOREIGN KEY (post_id) REFERENCES posts(id)
   )`);
 
-
+  // Insert demo data
+  setTimeout(() => {
+    insertDemoData();
+  }, 1000);
 });
+
+// Function to insert comprehensive demo data
+async function insertDemoData() {
+  // Demo users with properly hashed passwords
+  const password123Hash = await bcrypt.hash('password123', 10);
+  const demoPassword = await bcrypt.hash('demo123', 10);
+  
+  const demoUsers = [
+    { username: 'fahim_ahmed', email: 'fahim.ahmed@ulab.edu.bd', password: password123Hash, role: 'student', department_id: 1, student_id: 'CSE2101001', year_of_study: 3 },
+    { username: 'dr_rahman', email: 'dr.rahman@ulab.edu.bd', password: password123Hash, role: 'faculty', department_id: 1, student_id: null, year_of_study: null },
+    { username: 'sarah_khan', email: 'sarah.khan@ulab.edu.bd', password: password123Hash, role: 'student', department_id: 2, student_id: 'BBA2101015', year_of_study: 2 },
+    { username: 'prof_islam', email: 'prof.islam@ulab.edu.bd', password: password123Hash, role: 'faculty', department_id: 3, student_id: null, year_of_study: null },
+    { username: 'admin_office', email: 'admin@ulab.edu.bd', password: demoPassword, role: 'staff', department_id: 7, student_id: null, year_of_study: null }
+  ];
+
+  demoUsers.forEach(user => {
+    db.run(`INSERT OR IGNORE INTO users (username, email, password, role, department_id, student_id, year_of_study) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)`, 
+            [user.username, user.email, user.password, user.role, user.department_id, user.student_id, user.year_of_study]);
+  });
+
+  // Demo posts
+  const demoPosts = [
+    {
+      user_id: 1, content: '🚀 Looking for study partners for CSE213 (Data Structures)! We can work together on assignments and prepare for the upcoming midterm. Anyone interested?', 
+      post_type: 'discussion', department_id: 1, course_code: 'CSE213', category: 'study-group', priority: 'normal'
+    },
+    {
+      user_id: 2, content: '📢 IMPORTANT: CSE213 Midterm exam has been rescheduled to March 25th, 2024. Please check the updated syllabus on the course portal. Office hours available this week.', 
+      post_type: 'announcement', department_id: 1, course_code: 'CSE213', category: 'exam', priority: 'high', is_announcement: 1
+    },
+    {
+      user_id: 3, content: '💼 Exciting internship opportunity at ABC Tech! They are looking for Business Administration students for their marketing department. Great learning experience!', 
+      post_type: 'general', department_id: 2, course_code: null, category: 'job', priority: 'normal'
+    },
+    {
+      user_id: 1, content: '📚 Sharing my notes for CSE111 (Programming Language I). These cover all topics from variables to functions. Hope it helps fellow students!', 
+      post_type: 'resource', department_id: 1, course_code: 'CSE111', category: 'assignment', priority: 'normal'
+    },
+    {
+      user_id: 4, content: '⚡ Workshop on "Circuit Design Fundamentals" this Friday at 2 PM in EEE Lab. All EEE students are welcome. Refreshments will be provided!', 
+      post_type: 'event', department_id: 3, course_code: null, category: 'club', priority: 'normal'
+    },
+    {
+      user_id: 2, content: '🤝 Offering mentorship for junior CSE students struggling with programming concepts. I specialize in Java, Python, and Data Structures. DM me!', 
+      post_type: 'mentorship', department_id: 1, course_code: null, category: 'other', priority: 'normal'
+    },
+    {
+      user_id: 5, content: '📢 Important University Announcement\n\nCourse registration for Spring 2024 semester starts tomorrow. Please check your email for detailed instructions and deadlines. Contact the registrar office for any queries.', 
+      post_type: 'announcement', department_id: 7, course_code: null, category: 'other', priority: 'high', is_announcement: 1
+    },
+    {
+      user_id: 3, content: '🎯 Starting a Business Plan Competition team! Looking for creative minds from different departments. Prize money is 50,000 BDT. Who\'s in?', 
+      post_type: 'general', department_id: 2, course_code: null, category: 'project', priority: 'normal'
+    },
+    {
+      user_id: 4, content: '📢 EEE Department Notice\n\nAll EEE students must complete their lab work before the final examination. Lab sessions are available Monday to Thursday from 2 PM to 5 PM. Please bring your student ID.', 
+      post_type: 'announcement', department_id: 3, course_code: null, category: 'other', priority: 'high', is_announcement: 1
+    },
+    {
+      user_id: 2, content: '📢 CSE Seminar Alert\n\nSpecial seminar on "AI and Machine Learning Trends" scheduled for March 30th, 2024 at 10 AM in Room 301. All CSE students and faculty are invited. Refreshments will be served.', 
+      post_type: 'announcement', department_id: 1, course_code: null, category: 'other', priority: 'normal', is_announcement: 1
+    }
+  ];
+
+  demoPosts.forEach(post => {
+    db.run(`INSERT OR IGNORE INTO posts (user_id, content, post_type, department_id, course_code, category, priority, is_announcement, created_at) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now', '-' || CAST(ABS(RANDOM() % 168) AS TEXT) || ' hours'))`, 
+            [post.user_id, post.content, post.post_type, post.department_id, post.course_code, post.category, post.priority, post.is_announcement || 0]);
+  });
+
+  // Demo events
+  const demoEvents = [
+    {
+      title: '🎓 ULAB Tech Fest 2024',
+      description: 'Annual technology festival featuring programming contests, robotics competitions, and tech exhibitions. Open to all departments!',
+      event_type: 'festival',
+      department_id: 1,
+      organizer_id: 2,
+      event_date: '2024-04-15 10:00:00',
+      location: 'ULAB Main Campus',
+      is_public: 1
+    },
+    {
+      title: '💼 Career Fair Spring 2024',
+      description: 'Meet with top employers and explore internship and job opportunities. Dress professionally and bring your resume!',
+      event_type: 'career',
+      department_id: 7,
+      organizer_id: 5,
+      event_date: '2024-03-28 09:00:00',
+      location: 'ULAB Auditorium',
+      is_public: 1
+    },
+    {
+      title: '🔬 Research Symposium',
+      description: 'Present your research projects and learn about ongoing faculty research. Great networking opportunity!',
+      event_type: 'academic',
+      department_id: 1,
+      organizer_id: 2,
+      event_date: '2024-04-10 14:00:00',
+      location: 'Conference Hall A',
+      is_public: 1
+    },
+    {
+      title: '🎨 Cultural Night 2024',
+      description: 'Showcase your talents in music, dance, drama, and poetry. Registration deadline: March 20th',
+      event_type: 'cultural',
+      department_id: 4,
+      organizer_id: 1,
+      event_date: '2024-04-05 18:00:00',
+      location: 'ULAB Auditorium',
+      is_public: 1
+    }
+  ];
+
+  demoEvents.forEach(event => {
+    db.run(`INSERT OR IGNORE INTO events (title, description, event_type, department_id, organizer_id, event_date, location, is_public) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, 
+            [event.title, event.description, event.event_type, event.department_id, event.organizer_id, event.event_date, event.location, event.is_public]);
+  });
+
+  // Demo resources
+  const demoResources = [
+    {
+      title: '📖 CSE213 Data Structures Complete Notes',
+      description: 'Comprehensive notes covering Arrays, Linked Lists, Stacks, Queues, Trees, and Graphs with examples and practice problems.',
+      resource_type: 'notes',
+      file_url: '#demo-file-1',
+      course_code: 'CSE213',
+      department_id: 1,
+      uploader_id: 2,
+      is_approved: 1
+    },
+    {
+      title: '💻 Java Programming Tutorial Videos',
+      description: 'Step-by-step video tutorials for beginners covering basic syntax, OOP concepts, and common programming patterns.',
+      resource_type: 'video',
+      file_url: '#demo-file-2',
+      course_code: 'CSE111',
+      department_id: 1,
+      uploader_id: 1,
+      is_approved: 1
+    },
+    {
+      title: '📊 Business Statistics Formula Sheet',
+      description: 'Quick reference sheet with all important formulas for descriptive and inferential statistics used in business analysis.',
+      resource_type: 'reference',
+      file_url: '#demo-file-3',
+      course_code: 'BBA201',
+      department_id: 2,
+      uploader_id: 3,
+      is_approved: 1
+    },
+    {
+      title: '⚡ Circuit Analysis Lab Manual',
+      description: 'Laboratory manual with detailed procedures for basic and advanced circuit analysis experiments.',
+      resource_type: 'manual',
+      file_url: '#demo-file-4',
+      course_code: 'EEE201',
+      department_id: 3,
+      uploader_id: 4,
+      is_approved: 1
+    },
+    {
+      title: '📝 Academic Writing Guidelines',
+      description: 'Comprehensive guide for academic writing including citation formats, essay structure, and research methodology.',
+      resource_type: 'guide',
+      file_url: '#demo-file-5',
+      course_code: null,
+      department_id: 4,
+      uploader_id: 5,
+      is_approved: 1
+    }
+  ];
+
+  demoResources.forEach(resource => {
+    db.run(`INSERT OR IGNORE INTO resources (title, description, resource_type, file_url, course_code, department_id, uploader_id, is_approved) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, 
+            [resource.title, resource.description, resource.resource_type, resource.file_url, resource.course_code, resource.department_id, resource.uploader_id, resource.is_approved]);
+  });
+
+  // Demo academic calendar
+  const demoCalendar = [
+    {
+      title: '📚 Spring 2024 Semester Begins',
+      description: 'First day of classes for Spring 2024 semester. All students must attend orientation.',
+      event_type: 'semester',
+      start_date: '2024-01-15',
+      end_date: '2024-01-15',
+      department_id: null,
+      is_important: 1,
+      created_by: 5
+    },
+    {
+      title: '📝 Midterm Examination Period',
+      description: 'Midterm exams for all courses. Check individual course schedules for specific dates and times.',
+      event_type: 'examination',
+      start_date: '2024-03-18',
+      end_date: '2024-03-25',
+      department_id: null,
+      is_important: 1,
+      created_by: 5
+    },
+    {
+      title: '🏖️ Spring Break',
+      description: 'No classes scheduled. Campus facilities remain open with limited hours.',
+      event_type: 'break',
+      start_date: '2024-04-01',
+      end_date: '2024-04-07',
+      department_id: null,
+      is_important: 0,
+      created_by: 5
+    },
+    {
+      title: '📋 Course Registration - Fall 2024',
+      description: 'Online course registration opens for Fall 2024 semester. Priority given to senior students.',
+      event_type: 'registration',
+      start_date: '2024-04-15',
+      end_date: '2024-04-25',
+      department_id: null,
+      is_important: 1,
+      created_by: 5
+    },
+    {
+      title: '🎓 Final Examination Period',
+      description: 'Final exams for Spring 2024 semester. Students must check exam schedules on student portal.',
+      event_type: 'examination',
+      start_date: '2024-05-20',
+      end_date: '2024-05-30',
+      department_id: null,
+      is_important: 1,
+      created_by: 5
+    },
+    {
+      title: '🏆 Convocation 2024',
+      description: 'Graduation ceremony for completing students. Family and friends are welcome to attend.',
+      event_type: 'ceremony',
+      start_date: '2024-06-15',
+      end_date: '2024-06-15',
+      department_id: null,
+      is_important: 1,
+      created_by: 5
+    }
+  ];
+
+  demoCalendar.forEach(event => {
+    db.run(`INSERT OR IGNORE INTO academic_calendar (title, description, event_type, start_date, end_date, department_id, is_important, created_by) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, 
+            [event.title, event.description, event.event_type, event.start_date, event.end_date, event.department_id, event.is_important, event.created_by]);
+  });
+
+  // Demo post tags
+  const demoTags = [
+    { post_id: 1, tag: 'study-group' },
+    { post_id: 1, tag: 'cse213' },
+    { post_id: 1, tag: 'midterm' },
+    { post_id: 2, tag: 'important' },
+    { post_id: 2, tag: 'exam-schedule' },
+    { post_id: 3, tag: 'internship' },
+    { post_id: 3, tag: 'marketing' },
+    { post_id: 4, tag: 'programming' },
+    { post_id: 4, tag: 'notes' },
+    { post_id: 5, tag: 'workshop' },
+    { post_id: 5, tag: 'eee' },
+    { post_id: 6, tag: 'mentorship' },
+    { post_id: 6, tag: 'programming-help' }
+  ];
+
+  demoTags.forEach(tag => {
+    db.run(`INSERT OR IGNORE INTO post_tags (post_id, tag) VALUES (?, ?)`, [tag.post_id, tag.tag]);
+  });
+
+  // Demo likes and comments
+  setTimeout(() => {
+    // Add some likes
+    db.run(`INSERT OR IGNORE INTO likes (user_id, post_id) VALUES (2, 1)`);
+    db.run(`INSERT OR IGNORE INTO likes (user_id, post_id) VALUES (3, 1)`);
+    db.run(`INSERT OR IGNORE INTO likes (user_id, post_id) VALUES (1, 2)`);
+    db.run(`INSERT OR IGNORE INTO likes (user_id, post_id) VALUES (3, 3)`);
+    
+    // Add some comments
+    db.run(`INSERT OR IGNORE INTO comments (user_id, post_id, content, created_at) VALUES (2, 1, 'Count me in! I need help with linked lists.', datetime('now', '-2 hours'))`);
+    db.run(`INSERT OR IGNORE INTO comments (user_id, post_id, content, created_at) VALUES (3, 1, 'Great idea! Let me know the meeting time.', datetime('now', '-1 hour'))`);
+    db.run(`INSERT OR IGNORE INTO comments (user_id, post_id, content, created_at) VALUES (1, 2, 'Thank you for the update, Professor!', datetime('now', '-30 minutes'))`);
+  }, 500);
+
+  console.log('📊 Demo data inserted successfully!');
+}
 
 // Middleware to check if user is logged in
 const isAuthenticated = (req, res, next) => {
@@ -238,6 +568,37 @@ app.get('/profile', isAuthenticated, async (req, res) => {
   res.render('profile', { posts, user: req.session.user, departments });
 });
 
+// Update profile
+app.post('/update-profile', isAuthenticated, (req, res) => {
+  const { username, bio, student_id, year_of_study, department_id } = req.body;
+  const userId = req.session.userId;
+  
+  db.run(`UPDATE users SET username = ?, bio = ?, student_id = ?, year_of_study = ?, department_id = ? WHERE id = ?`, 
+          [username, bio, student_id, year_of_study, department_id, userId], 
+          function(err) {
+    if (err) {
+      return res.status(500).json({ error: 'Error updating profile' });
+    }
+    
+    // Update session data
+    req.session.user.username = username;
+    req.session.user.bio = bio;
+    req.session.user.student_id = student_id;
+    req.session.user.year_of_study = year_of_study;
+    req.session.user.department_id = department_id;
+    
+    // Get updated department info
+    db.get('SELECT name as department_name, code as department_code FROM departments WHERE id = ?', 
+           [department_id], (err, dept) => {
+      if (dept) {
+        req.session.user.department_name = dept.department_name;
+        req.session.user.department_code = dept.department_code;
+      }
+      res.json({ success: true, message: 'Profile updated successfully' });
+    });
+  });
+});
+
 app.get('/post', isAuthenticated, async (req, res) => {
   const departments = await new Promise((resolve) => {
     db.all('SELECT * FROM departments ORDER BY name', (err, deps) => {
@@ -250,6 +611,12 @@ app.get('/post', isAuthenticated, async (req, res) => {
 // User registration
 app.post('/register', async (req, res) => {
   const { username, email, password, role, department_id, student_id, year_of_study } = req.body;
+  
+  // Validate ULAB email
+  if (!email.endsWith('@ulab.edu.bd')) {
+    return res.status(400).json({ error: 'Only ULAB email addresses (@ulab.edu.bd) are allowed' });
+  }
+  
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
     db.run(`INSERT INTO users (username, email, password, role, department_id, student_id, year_of_study) 
@@ -257,7 +624,7 @@ app.post('/register', async (req, res) => {
             [username, email, hashedPassword, role || 'student', department_id || null, student_id || null, year_of_study || null], 
             function(err) {
       if (err) {
-        return res.status(500).json({ error: 'Error registering user' });
+        return res.status(500).json({ error: 'Error registering user. Username or email might already exist.' });
       }
       req.session.userId = this.lastID;
       req.session.user = { id: this.lastID, username, email, role: role || 'student', department_id };
@@ -270,11 +637,11 @@ app.post('/register', async (req, res) => {
 
 // User login
 app.post('/login', (req, res) => {
-  const { email, password } = req.body;
+  const { username, password } = req.body;
   db.get(`SELECT u.*, d.name as department_name, d.code as department_code 
           FROM users u 
           LEFT JOIN departments d ON u.department_id = d.id 
-          WHERE u.email = ?`, [email], async (err, user) => {
+          WHERE u.username = ?`, [username], async (err, user) => {
     if (err || !user) {
       return res.status(400).json({ error: 'Invalid credentials' });
     }
@@ -581,19 +948,40 @@ app.get('/api/events', isAuthenticated, (req, res) => {
   });
 });
 
-// Share resource
-app.post('/share-resource', isAuthenticated, (req, res) => {
+// Share resource with file upload
+app.post('/share-resource', isAuthenticated, upload.single('resource_file'), (req, res) => {
   const { title, description, resource_type, file_url, course_code, department_id } = req.body;
   const uploaderId = req.session.userId;
   
+  // Use uploaded file path or provided URL
+  let finalFileUrl = file_url;
+  if (req.file) {
+    finalFileUrl = '/uploads/' + req.file.filename;
+  }
+  
   db.run(`INSERT INTO resources (title, description, resource_type, file_url, course_code, department_id, uploader_id) 
           VALUES (?, ?, ?, ?, ?, ?, ?)`, 
-          [title, description, resource_type, file_url, course_code, department_id, uploaderId], 
+          [title, description, resource_type, finalFileUrl, course_code, department_id, uploaderId], 
           (err) => {
     if (err) {
       return res.status(500).json({ error: 'Error sharing resource' });
     }
     res.json({ success: true, message: 'Resource shared successfully' });
+  });
+});
+
+// File upload endpoint for general use
+app.post('/upload-file', isAuthenticated, upload.single('file'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
+  
+  res.json({ 
+    success: true, 
+    filename: req.file.filename,
+    originalname: req.file.originalname,
+    path: '/uploads/' + req.file.filename,
+    size: req.file.size
   });
 });
 
@@ -668,6 +1056,38 @@ app.get('/api/mentorship', isAuthenticated, (req, res) => {
       return res.status(500).json({ error: 'Error fetching mentorship requests' });
     }
     res.json(requests);
+  });
+});
+
+// Create announcement (special post type)
+app.post('/create-announcement', isAuthenticated, (req, res) => {
+  const { title, content, department_id, priority, event_date, location } = req.body;
+  const userId = req.session.userId;
+  
+  // Only faculty and staff can create announcements
+  if (req.session.user.role !== 'faculty' && req.session.user.role !== 'staff') {
+    return res.status(403).json({ error: 'Only faculty and staff can create announcements' });
+  }
+  
+  const fullContent = title ? `📢 ${title}\n\n${content}` : content;
+  const createdAt = new Date().toISOString();
+  
+  db.run(`INSERT INTO posts (user_id, content, post_type, department_id, priority, is_announcement, created_at) 
+          VALUES (?, ?, 'announcement', ?, ?, 1, ?)`, 
+          [userId, fullContent, department_id, priority || 'high', createdAt], 
+          function(err) {
+    if (err) {
+      return res.status(500).json({ error: 'Error creating announcement' });
+    }
+    
+    // If it's an event announcement, also add to events table
+    if (event_date && location) {
+      db.run(`INSERT INTO events (title, description, event_type, department_id, organizer_id, event_date, location, is_public) 
+              VALUES (?, ?, 'announcement', ?, ?, ?, ?, 1)`, 
+              [title, content, department_id, userId, event_date, location]);
+    }
+    
+    res.json({ success: true, message: 'Announcement created successfully' });
   });
 });
 
